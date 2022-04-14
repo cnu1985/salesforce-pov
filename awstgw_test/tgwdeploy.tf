@@ -15,7 +15,7 @@ provider "aws" {
 # VPCs
 
 resource "aws_vpc" "vpc-1" {
-  cidr_block = "10.10.0.0/16"
+  cidr_block = "10.3.0.0/16"
   tags = {
     Name     = "${var.scenario}-vpc1-dev"
     scenario = "${var.scenario}"
@@ -28,7 +28,7 @@ resource "aws_vpc" "vpc-1" {
 
 resource "aws_subnet" "vpc-1-sub-a" {
   vpc_id            = aws_vpc.vpc-1.id
-  cidr_block        = "10.10.1.0/24"
+  cidr_block        = "10.3.1.0/24"
   availability_zone = var.az1
 
   tags = {
@@ -38,7 +38,7 @@ resource "aws_subnet" "vpc-1-sub-a" {
 
 resource "aws_subnet" "vpc-1-sub-b" {
   vpc_id            = aws_vpc.vpc-1.id
-  cidr_block        = "10.10.2.0/24"
+  cidr_block        = "10.3.2.0/24"
   availability_zone = var.az2
 
   tags = {
