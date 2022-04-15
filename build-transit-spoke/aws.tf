@@ -138,6 +138,7 @@ module "awstgw13" {
   cidr                = "10.13.0.0/16"
   account             = var.aws_account_name
   enable_segmentation = true
+  insane_mode         = true
 }
 
 module "prod1" {
