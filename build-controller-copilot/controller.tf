@@ -1,12 +1,12 @@
 module "aviatrix-iam-roles" {
   count         = var.create_iam_roles ? 1 : 0
-  source        = "github.com/AviatrixSystems/terraform-modules.git//aviatrix-controller-iam-roles?ref=terraform_0.14"
+  source        = "github.com/AviatrixSystems/terraform-modules.git//aviatrix-controller-iam-roles"
   ec2_role_name = var.ec2_role_name
   app_role_name = var.app_role_name
 }
 
 module "aviatrix-controller-build" {
-  source                 = "github.com/AviatrixSystems/terraform-modules.git//aviatrix-controller-build?ref=terraform_0.14"
+  source                 = "github.com/AviatrixSystems/terraform-modules.git//aviatrix-controller-build"
   vpc                    = aws_vpc.vpc.id
   subnet                 = aws_subnet.subnet.id
   controller_name        = var.controller_name
@@ -21,7 +21,7 @@ module "aviatrix-controller-build" {
 }
 
 module "aviatrix-controller-initialize" {
-  source              = "github.com/AviatrixSystems/terraform-modules.git//aviatrix-controller-initialize?ref=terraform_0.14"
+  source              = "github.com/AviatrixSystems/terraform-modules.git//aviatrix-controller-initialize"
   admin_email         = var.admin_email
   admin_password      = var.admin_password
   private_ip          = module.aviatrix-controller-build.private_ip
