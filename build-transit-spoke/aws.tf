@@ -121,7 +121,7 @@ module "sharedservices_spoke" {
   region           = "us-west-2"
   cidr             = "10.12.0.0/16"
   account          = var.aws_account_name
-  transit_gw       = module.awstgw14.transit_gateway.gw_name
+  transit_gw       = module.awstgw13.transit_gateway.gw_name
   security_domain  = aviatrix_segmentation_security_domain.sharedservices.domain_name
   ha_gw            = false
   use_existing_vpc = true
