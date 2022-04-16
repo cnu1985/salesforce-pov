@@ -213,6 +213,7 @@ module "awstgw14" {
   enable_segmentation     = true
   insane_mode             = true
   firewall_image_version  = "10.1.4"
+  egress_enabled          = true
 }
 
 module "prod3" {
