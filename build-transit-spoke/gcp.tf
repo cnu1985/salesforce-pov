@@ -13,6 +13,7 @@ module "gcptgw16" {
   enable_segmentation   = true
   hpe                   = true
   instance_size         = "n1-highcpu-4"
+  egress_enabled        = true
 }
 
 module "prod7" {
