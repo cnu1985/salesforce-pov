@@ -214,6 +214,7 @@ module "awstgw14" {
   insane_mode             = true
   firewall_image_version  = "10.1.4"
   egress_enabled          = true
+  local_as_number         = "64774"
 }
 
 module "prod3" {
@@ -227,6 +228,7 @@ module "prod3" {
   transit_gw      = module.awstgw14.transit_gateway.gw_name
   security_domain = aviatrix_segmentation_security_domain.prod.domain_name
   enable_bgp      = true
+  local_as_number = "64719"
 }
 
 module "dev4" {
