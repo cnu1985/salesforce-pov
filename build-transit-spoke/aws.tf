@@ -217,6 +217,46 @@ module "awstgw14" {
   local_as_number         = "64774"
 }
 
+module "nat_spoke" {
+  source                   = "terraform-aviatrix-modules/mc-spoke/aviatrix"
+  version                  = "1.1.0"
+  cloud                    = "AWS"
+  name                     = "nat-spoke"
+  region                   = "us-east-1"
+  cidr                     = "172.28.1.0/24"
+  account                  = var.aws_account_name
+  transit_gw               = module.awstgw14.transit_gateway.gw_name
+  security_domain          = aviatrix_segmentation_security_domain.nat_spoke.domain_name
+  auto_advertise_s2c_cidrs = true
+}
+
+resource "aviatrix_site2cloud" "nat_spoke" {
+  vpc_id              = module.nat_spoke.vpc.vpc_id
+  connection_name     = "mna19_tgw"
+  connection_type     = "mapped"
+  remote_gateway_type = "generic"
+  tunnel_type         = "route"
+
+  remote_gateway_ip          = var.mna19_tgw_ip1
+  primary_cloud_gateway_name = module.nat_spoke.spoke_gateway.gw_name
+  pre_shared_key             = var.mna19_tgw_psk1
+
+  ha_enabled               = true
+  backup_remote_gateway_ip = var.mna19_tgw_ip2
+  backup_gateway_name      = module.nat_spoke.spoke_gateway.ha_gw_name
+  backup_pre_shared_key    = var.mna19_tgw_psk2
+
+  remote_subnet_cidr    = var.mna19_tgw_nat["remote_subnet_cidr"]
+  remote_subnet_virtual = var.mna19_tgw_nat["remote_subnet_virtual"]
+  local_subnet_cidr     = var.mna19_tgw_nat["local_subnet_cidr"]
+  local_subnet_virtual  = var.mna19_tgw_nat["local_subnet_virtual"]
+}
+
+resource "aviatrix_segmentation_security_domain_connection_policy" "nat_spoke_to_prod3" {
+  domain_name_1 = aviatrix_segmentation_security_domain.nat_spoke.domain_name
+  domain_name_2 = aviatrix_segmentation_security_domain.prod.domain_name
+}
+
 module "prod3" {
   source          = "terraform-aviatrix-modules/mc-spoke/aviatrix"
   version         = "1.1.0"
