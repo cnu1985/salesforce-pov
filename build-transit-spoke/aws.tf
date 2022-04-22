@@ -231,25 +231,26 @@ module "nat_spoke" {
 }
 
 resource "aviatrix_site2cloud" "nat_spoke" {
-  vpc_id              = module.nat_spoke.vpc.vpc_id
-  connection_name     = "mna19_tgw"
-  connection_type     = "mapped"
-  remote_gateway_type = "generic"
-  tunnel_type         = "route"
-
+  vpc_id                     = module.nat_spoke.vpc.vpc_id
+  connection_name            = "mna19_tgw"
+  connection_type            = "mapped"
+  remote_gateway_type        = "generic"
+  tunnel_type                = "route"
   remote_gateway_ip          = var.mna19_tgw_ip1
   primary_cloud_gateway_name = module.nat_spoke.spoke_gateway.gw_name
   pre_shared_key             = var.mna19_tgw_psk1
-
-  ha_enabled               = true
-  backup_remote_gateway_ip = var.mna19_tgw_ip2
-  backup_gateway_name      = module.nat_spoke.spoke_gateway.ha_gw_name
-  backup_pre_shared_key    = var.mna19_tgw_psk2
-
-  remote_subnet_cidr    = var.mna19_tgw_nat["remote_subnet_cidr"]
-  remote_subnet_virtual = var.mna19_tgw_nat["remote_subnet_virtual"]
-  local_subnet_cidr     = var.mna19_tgw_nat["local_subnet_cidr"]
-  local_subnet_virtual  = var.mna19_tgw_nat["local_subnet_virtual"]
+  ha_enabled                 = true
+  backup_remote_gateway_ip   = var.mna19_tgw_ip2
+  backup_gateway_name        = module.nat_spoke.spoke_gateway.ha_gw_name
+  backup_pre_shared_key      = var.mna19_tgw_psk2
+  remote_subnet_cidr         = var.mna19_tgw_nat["remote_subnet_cidr"]
+  remote_subnet_virtual      = var.mna19_tgw_nat["remote_subnet_virtual"]
+  local_subnet_cidr          = var.mna19_tgw_nat["local_subnet_cidr"]
+  local_subnet_virtual       = var.mna19_tgw_nat["local_subnet_virtual"]
+  forward_traffic_to_transit = true
+  depends_on = [
+    module.nat_spoke
+  ]
 }
 
 resource "aviatrix_segmentation_security_domain_connection_policy" "nat_spoke_to_prod3" {
