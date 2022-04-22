@@ -291,7 +291,6 @@ module "tableau5" {
   cloud                            = "AWS"
   name                             = "tableau5"
   region                           = "us-east-1"
-  cidr                             = "10.3.0.0/16"
   account                          = var.aws_account_name
   transit_gw                       = module.awstgw14.transit_gateway.gw_name
   security_domain                  = aviatrix_segmentation_security_domain.tableau.domain_name
