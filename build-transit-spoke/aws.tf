@@ -24,6 +24,11 @@ resource "aws_route_table" "psf_rtb" {
   tags = {
     Name = "psf-rtb"
   }
+  lifecycle {
+    ignore_changes = [
+      route
+    ]
+  }
 }
 
 resource "aws_route_table_association" "psf_rtb_association" {
@@ -47,6 +52,11 @@ resource "aws_route_table" "psf_rtb_ha" {
   }
   tags = {
     Name = "psf-rtb-ha"
+  }
+  lifecycle {
+    ignore_changes = [
+      route
+    ]
   }
 }
 
@@ -91,6 +101,11 @@ resource "aws_route_table" "spoke_rtb" {
   tags = {
     Name = "spoke-rtb"
   }
+  lifecycle {
+    ignore_changes = [
+      route
+    ]
+  }
 }
 
 resource "aws_route_table_association" "spoke_rtb_association" {
@@ -106,7 +121,7 @@ module "sharedservices_spoke" {
   region           = "us-west-2"
   cidr             = "10.12.0.0/16"
   account          = var.aws_account_name
-  transit_gw       = module.awstgw14.transit_gateway.gw_name
+  transit_gw       = module.awstgw13.transit_gateway.gw_name
   security_domain  = aviatrix_segmentation_security_domain.sharedservices.domain_name
   ha_gw            = false
   use_existing_vpc = true
@@ -123,6 +138,7 @@ module "awstgw13" {
   cidr                = "10.13.0.0/16"
   account             = var.aws_account_name
   enable_segmentation = true
+  insane_mode         = true
 }
 
 module "prod1" {
@@ -197,6 +213,49 @@ module "awstgw14" {
   enable_segmentation     = true
   insane_mode             = true
   firewall_image_version  = "10.1.4"
+  egress_enabled          = true
+  local_as_number         = "64774"
+}
+
+module "nat_spoke" {
+  source                   = "terraform-aviatrix-modules/mc-spoke/aviatrix"
+  version                  = "1.1.0"
+  cloud                    = "AWS"
+  name                     = "nat-spoke"
+  region                   = "us-east-1"
+  cidr                     = "172.28.1.0/24"
+  account                  = var.aws_account_name
+  transit_gw               = module.awstgw14.transit_gateway.gw_name
+  security_domain          = aviatrix_segmentation_security_domain.nat_spoke.domain_name
+  auto_advertise_s2c_cidrs = true
+}
+
+resource "aviatrix_site2cloud" "nat_spoke" {
+  vpc_id                     = module.nat_spoke.vpc.vpc_id
+  connection_name            = "mna19_tgw"
+  connection_type            = "mapped"
+  remote_gateway_type        = "generic"
+  tunnel_type                = "route"
+  remote_gateway_ip          = var.mna19_tgw_ip1
+  primary_cloud_gateway_name = module.nat_spoke.spoke_gateway.gw_name
+  pre_shared_key             = var.mna19_tgw_psk1
+  ha_enabled                 = true
+  backup_remote_gateway_ip   = var.mna19_tgw_ip2
+  backup_gateway_name        = module.nat_spoke.spoke_gateway.ha_gw_name
+  backup_pre_shared_key      = var.mna19_tgw_psk2
+  remote_subnet_cidr         = var.mna19_tgw_nat["remote_subnet_cidr"]
+  remote_subnet_virtual      = var.mna19_tgw_nat["remote_subnet_virtual"]
+  local_subnet_cidr          = var.mna19_tgw_nat["local_subnet_cidr"]
+  local_subnet_virtual       = var.mna19_tgw_nat["local_subnet_virtual"]
+  forward_traffic_to_transit = true
+  depends_on = [
+    module.nat_spoke
+  ]
+}
+
+resource "aviatrix_segmentation_security_domain_connection_policy" "nat_spoke_to_prod3" {
+  domain_name_1 = aviatrix_segmentation_security_domain.nat_spoke.domain_name
+  domain_name_2 = aviatrix_segmentation_security_domain.prod.domain_name
 }
 
 module "prod3" {
@@ -209,6 +268,8 @@ module "prod3" {
   account         = var.aws_account_name
   transit_gw      = module.awstgw14.transit_gateway.gw_name
   security_domain = aviatrix_segmentation_security_domain.prod.domain_name
+  enable_bgp      = true
+  local_as_number = "64719"
 }
 
 module "dev4" {
@@ -230,7 +291,6 @@ module "tableau5" {
   cloud                            = "AWS"
   name                             = "tableau5"
   region                           = "us-east-1"
-  cidr                             = "10.3.0.0/16"
   account                          = var.aws_account_name
   transit_gw                       = module.awstgw14.transit_gateway.gw_name
   security_domain                  = aviatrix_segmentation_security_domain.tableau.domain_name

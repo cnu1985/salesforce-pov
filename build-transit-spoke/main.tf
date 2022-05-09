@@ -154,3 +154,13 @@ resource "aviatrix_segmentation_security_domain" "sharedservices" {
     module.gcptgw17.transit_gateway
   ]
 }
+
+resource "aviatrix_segmentation_security_domain" "nat_spoke" {
+  domain_name = "NAT-Spoke"
+  depends_on = [
+    module.awstgw13.transit_gateway,
+    module.awstgw14.transit_gateway,
+    module.gcptgw16.transit_gateway,
+    module.gcptgw17.transit_gateway
+  ]
+}
